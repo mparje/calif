@@ -1,66 +1,86 @@
+import PyPDF2
+import re
+import spacy
 import streamlit as st
-import openai
-import PyPDF4
-from textblob import TextBlob
-from gensim.models.coherencemodel import CoherenceModel
 
-coherence_model = CoherenceModel(...)
-coherence_score = coherence_model.get_coherence()
+# Prompt the user for their PDF file
+file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
-
-def polarity_score(text):
-    blob = TextBlob(text)
-    polarity = blob.sentiment.polarity
-    return polarity
-
-
-# Set up the OpenAI API with the provided API key
-api_key = st.text_input("Enter your OpenAI API key:")
-openai.api_key = api_key
+# Set up the NLP model
+nlp = spacy.load("en_core_web_sm")
 
 # Define a function to extract text from a PDF file
 def extract_text_from_pdf(file):
-    pdf_reader = PyPDF4.PdfFileReader(file)
-    num_pages = pdf_reader.getNumPages()
+    pdf_reader = PyPDF2.PdfReader(file)
+    num_pages = len(pdf_reader.pages)
     text = ""
     for page_num in range(num_pages):
-        page = pdf_reader.getPage(page_num)
-        text += page.extractText()
+        page = pdf_reader.pages[page_num]
+        text += page.extract_text()
     return text
 
-# Define a function to generate a quality score for the text
-def generate_quality_score(text):
-    # Use TextBlob to get a polarity score for the text
-    blob = TextBlob(text)
-    polarity_score = blob.sentiment.polarity
+# Define a function to score the quality of the argumentation in a text
+def score_argumentation(text):
+    # Split the text into sentences
+    sentences = re.split(r"\.|\!|\?", text)
 
-    # Use OpenAI's GPT-3 to get a coherence score for the text
-    prompt = f"Please rate the coherence of the following text on a scale of 1 to 5, with 5 being highly coherent and 1 being not coherent: \n{text}"
-    response = openai.Completion.create(
-        engine="text-davinci-002",
-        prompt=prompt,
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-    coherence_score = int(response.choices[0].text.strip())
+    # Calculate the average length of a sentence
+    sentence_lengths = [len(sentence.split()) for sentence in sentences]
+    avg_sentence_length = sum(sentence_lengths) / len(sentence_lengths)
 
-    # Calculate the overall quality score
-    quality_score = (polarity_score + coherence_score) / 2
+    # Calculate the percentage of sentences that are complex
+    num_complex_sentences = 0
+    for sentence in sentences:
+        doc = nlp(sentence)
+        num_clauses = len([token for token in doc if token.dep_ == "mark"])
+        if num_clauses > 2:
+            num_complex_sentences += 1
+    percent_complex_sentences = num_complex_sentences / len(sentences)
 
-    return quality_score
+    # Determine if the text has a clear thesis statement
+    thesis_statement = None
+    for sentence in sentences:
+        if "thesis" in sentence.lower() or "argument" in sentence.lower():
+            thesis_statement = sentence
+            break
 
-# Define a function to handle the file upload and quality score generation
+    # Determine if the text provides sufficient evidence to support its thesis
+    evidence = None
+    for sentence in sentences:
+        if "evidence" in sentence.lower():
+            evidence = sentence
+            break
+
+    # Determine if the text provides sufficient counterarguments
+    counterarguments = None
+    for sentence in sentences:
+        if "counterargument" in sentence.lower() or "refutation" in sentence.lower():
+            counterarguments = sentence
+            break
+
+    # Score the text based on the Harvard criteria
+    score = 0
+    if avg_sentence_length < 25:
+        score += 1
+    if percent_complex_sentences < 0.3:
+        score += 1
+    if thesis_statement is not None:
+        score += 1
+    if evidence is not None:
+        score += 1
+    if counterarguments is not None:
+        score += 1
+
+    return score
+
+# Define a function to handle the file upload and argumentation scoring
 def handle_file_upload():
-    file = st.file_uploader("Upload a PDF file", type=["pdf"])
     if file is not None:
         text = extract_text_from_pdf(file)
-        quality_score = generate_quality_score(text)
-        st.write(f"The quality score for the PDF is {quality_score}")
-        st.write("Justification:")
-        st.write("- The polarity score (based on sentiment analysis) is", polarity_score)
-        st.write("- The coherence score (based on OpenAI's GPT-3) is", coherence_score)
+        score = score_argumentation(text)
+        st.write(f"The quality of the argumentation in this text is {score}/5.")
+    else:
+        st.write("Please upload a PDF file.")
 
 # Define a main function to run the program
 def main():
