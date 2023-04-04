@@ -1,17 +1,21 @@
+import PyPDF2
 import openai
 import streamlit as st
 
 # Prompt the user for their API key
 api_key = st.text_input("Ingrese su clave API de OpenAI:")
 
+# Set up the OpenAI API with the provided API key
+openai.api_key = api_key
+
 # Define a function to extract text from a PDF file
 def extract_text_from_pdf(file):
-    pdf_reader = PyPDF2.PdfReader(file)
-    num_pages = len(pdf_reader.pages)
+    pdf_reader = PyPDF2.PdfFileReader(file)
+    num_pages = pdf_reader.getNumPages()
     text = ""
     for page_num in range(num_pages):
-        page = pdf_reader.pages[page_num]
-        text += page.extract_text()
+        page = pdf_reader.getPage(page_num)
+        text += page.extractText()
     return text
 
 # Define a function to evaluate the quality of an argument
