@@ -3,8 +3,12 @@ from PyPDF2 import PdfReader
 import openai
 import streamlit as st
 
-# Solicita al usuario que ingrese su clave API de OpenAI
-api_key = st.text_input("Ingrese su clave API de OpenAI:")
+# Crear una columna izquierda en la interfaz de Streamlit
+left_column = st.sidebar
+
+# Añadir un título y una casilla de entrada para la clave API de OpenAI en la columna izquierda
+left_column.title("Evaluador de Calidad Argumentativa")
+api_key = left_column.text_input("Ingrese su clave API de OpenAI:", type="password")
 openai.api_key = api_key
 
 # Función para extraer texto de un archivo PDF
