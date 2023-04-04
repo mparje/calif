@@ -57,6 +57,7 @@ def evaluate_argumentative_quality(text):
     else:
         quality = "Malo"
 
+explanation += f"La justificación de la evaluación se basa en los criterios definidos y en la asignación de puntuaciones en función de cada uno de ellos. Se puede mejorar en algunos aspectos como la {contraarguments_criteria[0]} y la {contraarguments_criteria[1]}, en los que se obtuvo una puntuación más baja. En general, el texto presenta un argumento sólido y bien respaldado, con una buena organización y fluidez en la presentación de las ideas. Sin embargo, se podría mejorar la adaptación a la audiencia y la precisión en la definición de algunos términos clave."
     # Explicación de la evaluación
     explanation = f"La calidad argumentativa del texto se evalúa en función de los siguientes criterios:\n\n"
     explanation += f"- Coherencia y cohesión: {coherence_cohesion_feedback}\n"
