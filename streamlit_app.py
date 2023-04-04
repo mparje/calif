@@ -28,8 +28,8 @@ def evaluate_argumentative_quality(text):
         temperature=0.7,
     )
     quality = response.choices[0].text.strip()
-    justification = f"La justificación de la evaluación es: {response.choices[0].text.strip()}"
-    return quality, justification
+    explanation = f"La explicación de la evaluación es: {response.choices[0].text.strip()}"
+    return quality, explanation
 
 # Función para manejar la carga de archivos y la evaluación
 def handle_file_upload():
@@ -37,9 +37,9 @@ def handle_file_upload():
     if file is not None:
         text = extract_text_from_pdf(file)
         if st.button("Evaluar"):
-            quality, justification = evaluate_argumentative_quality(text)
+            quality, explanation = evaluate_argumentative_quality(text)
             st.write(f"Calidad argumentativa: {quality}")
-            st.write(justification)
+            st.write(explanation)
 
 # Función principal para ejecutar la aplicación Streamlit
 def main():
