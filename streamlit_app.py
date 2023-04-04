@@ -80,7 +80,7 @@ def handle_file_upload():
 
 # Define a main function to run the program
 def main():
-handle_file_upload()
+    handle_file_upload()
 
 if name == “main”:
 main()
