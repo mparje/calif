@@ -1,5 +1,5 @@
 import io
-import PyPDF2
+from PyPDF2 import PdfReader
 import openai
 import streamlit as st
 
@@ -9,12 +9,12 @@ openai.api_key = api_key
 
 # Función para extraer texto de un archivo PDF
 def extract_text_from_pdf(file):
-    pdf_reader = PyPDF2.PdfFileReader(io.BytesIO(file.read()))
-    num_pages = pdf_reader.getNumPages()
+    pdf_reader = PdfReader(file)
+    num_pages = len(pdf_reader.pages)
     text = ""
     for page_num in range(num_pages):
-        page = pdf_reader.getPage(page_num)
-        text += page.extractText()
+        page = pdf_reader.pages[page_num]
+        text += page.extract_text()
     return text
 
 def evaluate_argumentative_quality(text):
