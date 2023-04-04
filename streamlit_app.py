@@ -28,7 +28,6 @@ def evaluate_argumentative_quality(text):
     quality = response.choices[0].text.strip()
     return quality
 
-python
 def handle_file_upload():
     file = st.file_uploader("Upload a PDF file", type=["pdf"])
     if file is not None:
