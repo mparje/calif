@@ -5,6 +5,9 @@ import streamlit as st
 # Prompt the user for their API key
 api_key = st.text_input("Enter your OpenAI API key:")
 
+# Set up the OpenAI API with the provided API key
+openai.api_key = api_key
+
 # Define a function to extract text from a PDF file
 def extract_text_from_pdf(file):
     pdf_reader = PyPDF2.PdfReader(file)
