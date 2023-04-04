@@ -1,18 +1,15 @@
-import PyPDF2
-import openai
 import streamlit as st
-import uuid
+import openai
+import PyPDF4
 from textblob import TextBlob
 
-# Prompt the user for their API key
-api_key = st.text_input("Enter your OpenAI API key:")
-
 # Set up the OpenAI API with the provided API key
+api_key = st.text_input("Enter your OpenAI API key:")
 openai.api_key = api_key
 
 # Define a function to extract text from a PDF file
 def extract_text_from_pdf(file):
-    pdf_reader = PyPDF2.PdfFileReader(file)
+    pdf_reader = PyPDF4.PdfFileReader(file)
     num_pages = pdf_reader.getNumPages()
     text = ""
     for page_num in range(num_pages):
@@ -20,28 +17,39 @@ def extract_text_from_pdf(file):
         text += page.extractText()
     return text
 
-# Define a function to generate an evaluation of the argumentative quality of the text
-def evaluate_quality(text):
+# Define a function to generate a quality score for the text
+def generate_quality_score(text):
+    # Use TextBlob to get a polarity score for the text
     blob = TextBlob(text)
-    polarity = blob.sentiment.polarity
-    subjectivity = blob.sentiment.subjectivity
-    if polarity > 0.2 and subjectivity > 0.4:
-        return "Good"
-    elif polarity < -0.2 and subjectivity > 0.4:
-        return "Poor"
-    else:
-        return "Neutral"
+    polarity_score = blob.sentiment.polarity
 
-# Define a function to handle the file upload and evaluation generation
+    # Use OpenAI's GPT-3 to get a coherence score for the text
+    prompt = f"Please rate the coherence of the following text on a scale of 1 to 5, with 5 being highly coherent and 1 being not coherent: \n{text}"
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=prompt,
+        max_tokens=1024,
+        n=1,
+        stop=None,
+        temperature=0.5,
+    )
+    coherence_score = int(response.choices[0].text.strip())
+
+    # Calculate the overall quality score
+    quality_score = (polarity_score + coherence_score) / 2
+
+    return quality_score
+
+# Define a function to handle the file upload and quality score generation
 def handle_file_upload():
     file = st.file_uploader("Upload a PDF file", type=["pdf"])
     if file is not None:
         text = extract_text_from_pdf(file)
-        st.write("Argumentative quality evaluation:")
-        evaluation = st.selectbox("Select a quality rating:", ["Good", "Neutral", "Poor"])
-        justification = st.text_area("Justify your rating:")
-        st.write("Evaluation:", evaluation)
-        st.write("Justification:", justification)
+        quality_score = generate_quality_score(text)
+        st.write(f"The quality score for the PDF is {quality_score}")
+        st.write("Justification:")
+        st.write("- The polarity score (based on sentiment analysis) is", polarity_score)
+        st.write("- The coherence score (based on OpenAI's GPT-3) is", coherence_score)
 
 # Define a main function to run the program
 def main():
