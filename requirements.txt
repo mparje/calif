@@ -1,5 +1,6 @@
 openai
 PyPDF4
+PyPDF2
 nltk
 numpy
 pandas
