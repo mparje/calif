@@ -1,11 +1,3 @@
-openai
-PyPDF4
 PyPDF2
-nltk
-numpy
-pandas
-transformers
-streamlit
-textblob
-pdfReader
 spacy
+re
