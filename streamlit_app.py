@@ -18,14 +18,20 @@ def extract_text_from_pdf(file):
     return text
 
 def evaluate_argumentative_quality(text):
+    # Criterios de calidad argumentativa:
+    # 1. Claridad y coherencia
+    # 2. Relevancia
+    # 3. Evidencia
+    # 4. Persuasión
+    # 5. Respuesta a objeciones
+    # 6. Originalidad
+    # 7. Utilidad práctica
+
     # ... (Aquí va el código de la función evaluate_argumentative_quality)
     quality = 0.0
     explanation = ""
     # Realizar análisis argumentativo y asignar valores a quality y explanation
-    if quality == 0.0:
-        explanation = "No se pudo evaluar la calidad argumentativa del texto."
     return quality, explanation
-
 
 # Función para manejar la carga de archivos y la evaluación
 def handle_file_upload():
