@@ -82,5 +82,5 @@ def handle_file_upload():
 def main():
     handle_file_upload()
 
-if name == "main":
-main()
+    if name == "main":
+    main()
