@@ -17,20 +17,23 @@ def extract_text_from_pdf(file):
         text += page.extract_text()
     return text
 
+# Función para evaluar la calidad argumentativa del texto utilizando OpenAI
 def evaluate_argumentative_quality(text):
-    # Criterios de calidad argumentativa:
-    # 1. Claridad y coherencia
-    # 2. Relevancia
-    # 3. Evidencia
-    # 4. Persuasión
-    # 5. Respuesta a objeciones
-    # 6. Originalidad
-    # 7. Utilidad práctica
-
-    # ... (Aquí va el código de la función evaluate_argumentative_quality)
-    quality = 0.0
-    explanation = ""
-    # Realizar análisis argumentativo y asignar valores a quality y explanation
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=(
+            f"Evalúa la calidad argumentativa de este texto:\n"
+            f"{text}\n"
+            f"Criterios de evaluación: claridad, relevancia, evidencia, persuasión, respuesta a objeciones, originalidad y utilidad práctica.\n"
+        ),
+        max_tokens=1024,
+        temperature=0.5,
+        n = 1,
+        stop=None,
+        timeout=60,
+    )
+    quality = response.choices[0].text
+    explanation = "Evaluación realizada utilizando el modelo de lenguaje GPT-3 de OpenAI."
     return quality, explanation
 
 # Función para manejar la carga de archivos y la evaluación
