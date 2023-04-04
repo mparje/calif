@@ -2,6 +2,13 @@ import streamlit as st
 import openai
 import PyPDF4
 from textblob import TextBlob
+from textblob import TextBlob
+
+def polarity_score(text):
+    blob = TextBlob(text)
+    polarity = blob.sentiment.polarity
+    return polarity
+
 
 # Set up the OpenAI API with the provided API key
 api_key = st.text_input("Enter your OpenAI API key:")
