@@ -2,7 +2,11 @@ import streamlit as st
 import openai
 import PyPDF4
 from textblob import TextBlob
-from textblob import TextBlob
+from gensim.models.coherencemodel import CoherenceModel
+
+coherence_model = CoherenceModel(...)
+coherence_score = coherence_model.get_coherence()
+
 
 def polarity_score(text):
     blob = TextBlob(text)
