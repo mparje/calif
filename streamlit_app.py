@@ -75,4 +75,12 @@ def handle_file_upload():
         text = extract_text_from_pdf(file)
         argumento = st.text_area("Ingrese el argumento a evaluar:")
         if st.button("Evaluar"):
-            puntaje
+            puntaje = evaluar_argumento(argumento)
+            st.write(f"Puntaje del argumento: {puntaje:.2f}")
+
+# Define a main function to run the program
+def main():
+handle_file_upload()
+
+if name == “main”:
+main()
