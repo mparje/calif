@@ -23,7 +23,7 @@ def extract_text_from_pdf(file):
 
 # Función para evaluar la calidad argumentativa del texto utilizando OpenAI
 def evaluate_argumentative_quality(text):
-    response = openai.v1/Chat.Completions(
+    response = openai.Chat.Completions(
         engine="gpt-3.5-turbo",
         prompt=(
             f"Evalúa la calidad argumentativa de este texto:\n"
