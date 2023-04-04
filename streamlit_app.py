@@ -1,15 +1,14 @@
 import PyPDF2
-import re
-import spacy
+import openai
 import streamlit as st
 
-# Prompt the user for their PDF file
-file = st.file_uploader("Upload a PDF file", type=["pdf"])
+# Solicita al usuario su clave API de OpenAI
+api_key = st.text_input("Ingresa tu clave API de OpenAI:")
 
-# Set up the NLP model
-nlp = spacy.load("en_core_web_sm")
+# Configura la API de OpenAI con la clave API proporcionada
+openai.api_key = api_key
 
-# Define a function to extract text from a PDF file
+# Define una función para extraer texto de un archivo PDF
 def extract_text_from_pdf(file):
     pdf_reader = PyPDF2.PdfReader(file)
     num_pages = len(pdf_reader.pages)
@@ -19,72 +18,56 @@ def extract_text_from_pdf(file):
         text += page.extract_text()
     return text
 
-# Define a function to score the quality of the argumentation in a text
-def score_argumentation(text):
-    # Split the text into sentences
-    sentences = re.split(r"\.|\!|\?", text)
+# Define una función para generar respuestas a preguntas de usuario utilizando la API de ChatGPT
+def generate_answer(question, text):
+    max_context_length = 4096 - len(question) - 30
+    truncated_text = text[:max_context_length]
+    prompt = f"{truncated_text}\n\nPregunta: {question}\nRespuesta:"
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=prompt,
+        max_tokens=1024,
+        n=1,
+        stop=None,
+        temperature=0.7,
+    )
+    answer = response.choices[0].text.strip()
+    return answer
 
-    # Calculate the average length of a sentence
-    sentence_lengths = [len(sentence.split()) for sentence in sentences]
-    avg_sentence_length = sum(sentence_lengths) / len(sentence_lengths)
+# Define una función para evaluar la comprensión del usuario basándose en el texto proporcionado
+def evaluate(text):
+    num_questions = 0
+    num_correct = 0
+    total_score = 0
+    questions = [
+        "¿Cuál es el tema principal del texto?",
+        "¿Cuál es la tesis del autor?",
+        "¿Cuáles son los argumentos que utiliza el autor para sostener su tesis?",
+        "¿Cuáles son las conclusiones del autor?",
+        "¿Cuál es tu opinión sobre el texto?",
+    ]
+    for question in questions:
+        user_answer = st.text_input(question)
+        if user_answer:
+            num_questions += 1
+            answer = generate_answer(question, text)
+            if answer.lower() == user_answer.lower():
+                num_correct += 1
+                total_score += 2
+            elif user_answer.lower() in answer.lower():
+                total_score += 1
+    if num_questions == 0:
+        return "Por favor, responde al menos una pregunta para evaluar tu comprensión."
+    else:
+        score = round((total_score / (num_questions * 2)) * 10, 2)
+        return f"Tu calificación es: {score}/10"
 
-    # Calculate the percentage of sentences that are complex
-    num_complex_sentences = 0
-    for sentence in sentences:
-        doc = nlp(sentence)
-        num_clauses = len([token for token in doc if token.dep_ == "mark"])
-        if num_clauses > 2:
-            num_complex_sentences += 1
-    percent_complex_sentences = num_complex_sentences / len(sentences)
-
-    # Determine if the text has a clear thesis statement
-    thesis_statement = None
-    for sentence in sentences:
-        if "thesis" in sentence.lower() or "argument" in sentence.lower():
-            thesis_statement = sentence
-            break
-
-    # Determine if the text provides sufficient evidence to support its thesis
-    evidence = None
-    for sentence in sentences:
-        if "evidence" in sentence.lower():
-            evidence = sentence
-            break
-
-    # Determine if the text provides sufficient counterarguments
-    counterarguments = None
-    for sentence in sentences:
-        if "counterargument" in sentence.lower() or "refutation" in sentence.lower():
-            counterarguments = sentence
-            break
-
-    # Score the text based on the Harvard criteria
-    score = 0
-    if avg_sentence_length < 25:
-        score += 1
-    if percent_complex_sentences < 0.3:
-        score += 1
-    if thesis_statement is not None:
-        score += 1
-    if evidence is not None:
-        score += 1
-    if counterarguments is not None:
-        score += 1
-
-    return score
-
-# Define a function to handle the file upload and argumentation scoring
+# Define una función para manejar la carga de archivos y la generación de respuestas
 def handle_file_upload():
+    file = st.file_uploader("Sube un archivo PDF", type=["pdf"])
     if file is not None:
         text = extract_text_from_pdf(file)
-        score = score_argumentation(text)
-        st.write(f"The quality of the argumentation in this text is {score}/5.")
-    else:
-        st.write("Please upload a PDF file.")
+        st.write(evaluate(text))
 
-# Define a main function to run the program
-def main():
-    handle_file_upload()
-
-if __name__ == "__main__":
-    main()
+# Llama a la función handle_file_upload para ejecutar la aplicación
+handle_file_upload()
