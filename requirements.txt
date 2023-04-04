@@ -6,3 +6,4 @@ pandas
 transformers
 streamlit
 textblob
+pdfReader
