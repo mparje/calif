@@ -3,7 +3,7 @@ import openai
 import streamlit as st
 
 # Solicita al usuario que ingrese su clave API de OpenAI
-api_key = st.text_input("Enter your OpenAI API key:")
+api_key = st.text_input("Ingrese su clave API de OpenAI:")
 openai.api_key = api_key
 
 # Función para extraer texto de un archivo PDF
@@ -18,7 +18,7 @@ def extract_text_from_pdf(file):
 
 # Función para evaluar la calidad argumentativa del texto utilizando OpenAI
 def evaluate_argumentative_quality(text):
-    prompt = f"Please evaluate the argumentative quality of the following text:\n\n{text}\n\nQuality:"
+    prompt = f"Por favor, evalúe la calidad argumentativa del siguiente texto:\n\n{text}\n\nCalidad argumentativa:"
     response = openai.Completion.create(
         engine="text-davinci-002",
         prompt=prompt,
@@ -28,16 +28,18 @@ def evaluate_argumentative_quality(text):
         temperature=0.7,
     )
     quality = response.choices[0].text.strip()
-    return quality
+    justification = f"La justificación de la evaluación es: {response.choices[0].text.strip()}"
+    return quality, justification
 
 # Función para manejar la carga de archivos y la evaluación
 def handle_file_upload():
-    file = st.file_uploader("Upload a PDF file", type=["pdf"])
+    file = st.file_uploader("Subir un archivo PDF", type=["pdf"])
     if file is not None:
         text = extract_text_from_pdf(file)
-        if st.button("Evaluate"):
-            quality = evaluate_argumentative_quality(text)
-            st.write(f"Argumentative Quality: {quality}")
+        if st.button("Evaluar"):
+            quality, justification = evaluate_argumentative_quality(text)
+            st.write(f"Calidad argumentativa: {quality}")
+            st.write(justification)
 
 # Función principal para ejecutar la aplicación Streamlit
 def main():
