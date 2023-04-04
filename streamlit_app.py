@@ -32,7 +32,12 @@ def evaluate_argumentative_quality(text):
         stop=None,
         timeout=60,
     )
-    quality = response.choices[0].text
+    quality_text = response.choices[0].text.strip()
+    try:
+        quality = int(float(quality_text) * 10)
+        quality = min(10, max(1, quality)) # Asegurarse de que la calificación esté entre 1 y 10
+    except ValueError:
+        quality = 0
     explanation = "Evaluación realizada utilizando el modelo de lenguaje GPT-3 de OpenAI."
     return quality, explanation
 
@@ -43,7 +48,10 @@ def handle_file_upload():
         text = extract_text_from_pdf(file)
         if st.button("Evaluar"):
             quality, explanation = evaluate_argumentative_quality(text)
-            st.write(f"Calidad argumentativa: {quality}")
+            if quality == 0:
+                st.write("No se pudo evaluar la calidad argumentativa del texto.")
+            else:
+                st.write(f"Calidad argumentativa: {quality}/10")
             st.write(explanation)
 
 # Función principal para ejecutar la aplicación Streamlit
